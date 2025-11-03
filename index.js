@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -27,16 +27,68 @@ app.get("/", (req, res) => {
 
 async function run() {
   try {
-    // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
+
+    const userDB = client.db("usersDB");
+    const usersCollection = userDB.collection("users");
+
+    // CREATE (POST)
+    app.post("/users", async (req, res) => {
+      const newUser = req.body;
+      console.log("user info", newUser); // ক্লায়েন্ট পাঠানো ডেটা কনসোলে দেখাবে
+      const result = await usersCollection.insertOne(newUser);
+      res.send(result);
+    });
+
+    // READ (GET all users)
+    app.get("/users", async (req, res) => {
+      const cursor = usersCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    // READ (GET single user by ID)
+    app.get("/users/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log("need user with id", id);
+      const query = { _id: new ObjectId(id) };
+      const result = await usersCollection.findOne(query);
+      res.send(result);
+    });
+
+    //PATH (Server side)
+    app.patch("/users/:id", async (req, res) => {
+      const id = req.params.id;
+      const updatedUser = req.body;
+      console.log("to update", id, updatedUser);
+
+      const query = { _id: new ObjectId(id) };
+      const update = {
+        $set: {
+          name: updatedUser.name,
+          email: updatedUser.email,
+        },
+      };
+
+      const options = {};
+      const result = await usersCollection.updateOne(query, update);
+      res.send(result);
+    });
+
+    // DELETE
+    app.delete("/users/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await usersCollection.deleteOne(query);
+      res.send(result);
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
   } finally {
-    // Ensures that the client will close when you finish/error
-    // await client.close();
   }
 }
 run().catch(console.dir);
