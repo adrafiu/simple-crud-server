@@ -9,8 +9,10 @@ app.use(express.json());
 
 //simpleDBUser
 //E8a7vjW6tNauW1il
-const uri =
-  "mongodb+srv://simpleDBUser:E8a7vjW6tNauW1il@cluster0.0a7phnt.mongodb.net/?appName=Cluster0";
+// const uri =
+//   "mongodb+srv://simpleDBUser:E8a7vjW6tNauW1il@cluster0.0a7phnt.mongodb.net/?appName=Cluster0";
+
+const uri = "mongodb://localhost:27017";
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
